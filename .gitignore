@@ -1,0 +1,35 @@
+# Python cache
+__pycache__/
+*.pyc
+
+# Local environments
+.env
+.venv
+env/
+venv/
+ENV/
+
+# Project local configuration and database
+config.yaml
+universities.yaml
+radar_platform.db
+
+# Logs
+*.log
+logs/
+
+# Node.js / 前端
+node_modules/
+frontend/node_modules/
+
+# 压缩包
+*.zip
+
+# IDE
+.vscode/
+.idea/
+.gemini/
+
+# OS generated files
+.DS_Store
+Thumbs.db

@@ -1,0 +1,365 @@
+# universities_db.yaml — 院校数据库（供前端省份级联选择使用）
+# 此文件为全国研招院校列表的精简本地缓存
+
+universities:
+# ═══ 陕西 ═══
+- name: 陕西师范大学
+  province: 陕西
+  region: 西北
+  modules:
+  - name: 心理学院
+    selector: .news-list li
+    url: https://psych.snnu.edu.cn/tzgg.htm
+  - name: 研招网公告
+    selector: .wbgg-list a, .wbgg_list a
+    url: https://yz.chsi.com.cn/sswbgg/?dwdm=10718&ssdm=61
+- name: 西安交通大学
+  province: 陕西
+  region: 西北
+  modules: []
+- name: 西北工业大学
+  province: 陕西
+  region: 西北
+  modules: []
+- name: 西北大学
+  province: 陕西
+  region: 西北
+  modules: []
+- name: 西安电子科技大学
+  province: 陕西
+  region: 西北
+  modules: []
+- name: 长安大学
+  province: 陕西
+  region: 西北
+  modules: []
+- name: 西北农林科技大学
+  province: 陕西
+  region: 西北
+  modules: []
+
+# ═══ 北京 ═══
+- name: 北京大学
+  province: 北京
+  region: 华北
+  modules: []
+- name: 清华大学
+  province: 北京
+  region: 华北
+  modules: []
+- name: 中国人民大学
+  province: 北京
+  region: 华北
+  modules: []
+- name: 北京师范大学
+  province: 北京
+  region: 华北
+  modules: []
+- name: 北京航空航天大学
+  province: 北京
+  region: 华北
+  modules: []
+- name: 北京理工大学
+  province: 北京
+  region: 华北
+  modules: []
+- name: 北京科技大学
+  province: 北京
+  region: 华北
+  modules: []
+- name: 北京交通大学
+  province: 北京
+  region: 华北
+  modules: []
+- name: 首都师范大学
+  province: 北京
+  region: 华北
+  modules: []
+- name: 中央民族大学
+  province: 北京
+  region: 华北
+  modules: []
+- name: 中国政法大学
+  province: 北京
+  region: 华北
+  modules: []
+
+# ═══ 天津 ═══
+- name: 南开大学
+  province: 天津
+  region: 华北
+  modules: []
+- name: 天津大学
+  province: 天津
+  region: 华北
+  modules: []
+- name: 天津师范大学
+  province: 天津
+  region: 华北
+  modules: []
+
+# ═══ 上海 ═══
+- name: 复旦大学
+  province: 上海
+  region: 华东
+  modules: []
+- name: 上海交通大学
+  province: 上海
+  region: 华东
+  modules: []
+- name: 同济大学
+  province: 上海
+  region: 华东
+  modules: []
+- name: 华东师范大学
+  province: 上海
+  region: 华东
+  modules: []
+- name: 华东理工大学
+  province: 上海
+  region: 华东
+  modules: []
+- name: 上海师范大学
+  province: 上海
+  region: 华东
+  modules: []
+
+# ═══ 江苏 ═══
+- name: 南京大学
+  province: 江苏
+  region: 华东
+  modules: []
+- name: 东南大学
+  province: 江苏
+  region: 华东
+  modules: []
+- name: 南京师范大学
+  province: 江苏
+  region: 华东
+  modules: []
+- name: 苏州大学
+  province: 江苏
+  region: 华东
+  modules: []
+
+# ═══ 浙江 ═══
+- name: 浙江大学
+  province: 浙江
+  region: 华东
+  modules: []
+- name: 浙江师范大学
+  province: 浙江
+  region: 华东
+  modules: []
+
+# ═══ 湖南 ═══
+- name: 中南大学
+  province: 湖南
+  region: 华中
+  modules: []
+- name: 湖南大学
+  province: 湖南
+  region: 华中
+  modules: []
+- name: 湖南师范大学
+  province: 湖南
+  region: 华中
+  modules: []
+
+# ═══ 湖北 ═══
+- name: 武汉大学
+  province: 湖北
+  region: 华中
+  modules: []
+- name: 华中科技大学
+  province: 湖北
+  region: 华中
+  modules: []
+- name: 华中师范大学
+  province: 湖北
+  region: 华中
+  modules: []
+
+# ═══ 广东 ═══
+- name: 中山大学
+  province: 广东
+  region: 华南
+  modules: []
+- name: 华南理工大学
+  province: 广东
+  region: 华南
+  modules: []
+- name: 华南师范大学
+  province: 广东
+  region: 华南
+  modules: []
+- name: 暨南大学
+  province: 广东
+  region: 华南
+  modules: []
+- name: 深圳大学
+  province: 广东
+  region: 华南
+  modules: []
+
+# ═══ 四川 ═══
+- name: 四川大学
+  province: 四川
+  region: 西南
+  modules: []
+- name: 电子科技大学
+  province: 四川
+  region: 西南
+  modules: []
+- name: 西南交通大学
+  province: 四川
+  region: 西南
+  modules: []
+- name: 四川师范大学
+  province: 四川
+  region: 西南
+  modules: []
+- name: 西南大学
+  province: 重庆
+  region: 西南
+  modules: []
+
+# ═══ 山东 ═══
+- name: 山东大学
+  province: 山东
+  region: 华东
+  modules: []
+- name: 山东师范大学
+  province: 山东
+  region: 华东
+  modules: []
+
+# ═══ 河南 ═══
+- name: 郑州大学
+  province: 河南
+  region: 华中
+  modules: []
+- name: 河南大学
+  province: 河南
+  region: 华中
+  modules: []
+
+# ═══ 辽宁 ═══
+- name: 大连理工大学
+  province: 辽宁
+  region: 东北
+  modules: []
+- name: 东北大学
+  province: 辽宁
+  region: 东北
+  modules: []
+- name: 辽宁师范大学
+  province: 辽宁
+  region: 东北
+  modules: []
+
+# ═══ 吉林 ═══
+- name: 吉林大学
+  province: 吉林
+  region: 东北
+  modules: []
+- name: 东北师范大学
+  province: 吉林
+  region: 东北
+  modules: []
+
+# ═══ 黑龙江 ═══
+- name: 哈尔滨工业大学
+  province: 黑龙江
+  region: 东北
+  modules: []
+- name: 哈尔滨师范大学
+  province: 黑龙江
+  region: 东北
+  modules: []
+
+# ═══ 福建 ═══
+- name: 厦门大学
+  province: 福建
+  region: 华东
+  modules: []
+- name: 福建师范大学
+  province: 福建
+  region: 华东
+  modules: []
+
+# ═══ 安徽 ═══
+- name: 中国科学技术大学
+  province: 安徽
+  region: 华东
+  modules: []
+- name: 安徽师范大学
+  province: 安徽
+  region: 华东
+  modules: []
+
+# ═══ 江西 ═══
+- name: 南昌大学
+  province: 江西
+  region: 华东
+  modules: []
+- name: 江西师范大学
+  province: 江西
+  region: 华东
+  modules: []
+
+# ═══ 河北 ═══
+- name: 河北大学
+  province: 河北
+  region: 华北
+  modules: []
+- name: 河北师范大学
+  province: 河北
+  region: 华北
+  modules: []
+
+# ═══ 山西 ═══
+- name: 山西大学
+  province: 山西
+  region: 华北
+  modules: []
+
+# ═══ 甘肃 ═══
+- name: 兰州大学
+  province: 甘肃
+  region: 西北
+  modules: []
+- name: 西北师范大学
+  province: 甘肃
+  region: 西北
+  modules: []
+
+# ═══ 云南 ═══
+- name: 云南大学
+  province: 云南
+  region: 西南
+  modules: []
+- name: 云南师范大学
+  province: 云南
+  region: 西南
+  modules: []
+
+# ═══ 贵州 ═══
+- name: 贵州大学
+  province: 贵州
+  region: 西南
+  modules: []
+- name: 贵州师范大学
+  province: 贵州
+  region: 西南
+  modules: []
+
+# ═══ 广西 ═══
+- name: 广西大学
+  province: 广西
+  region: 华南
+  modules: []
+- name: 广西师范大学
+  province: 广西
+  region: 华南
+  modules: []
