@@ -7,10 +7,12 @@ from app.services.scheduler import start_scan_job
 app = create_app()
 
 if __name__ == '__main__':
-    print("\n" + "="*50)
-    print("  * 院校通知监控系统 v4.0 - 全量扫描模式")
-    print("  * 服务启动中，正在连接本地数据中心...")
-    print("="*50 + "\n")
+    # 隐藏 Flask 开发服务器的各种启动警告和请求日志，让命令行更干净
+    import logging
+    log = logging.getLogger('werkzeug')
+    log.setLevel(logging.ERROR)
+    
+    print("\n🚀 正在启动考研情报监控雷达，请稍候...")
 
     # 1. 服务启动初始化：自动执行数据校准与监控引擎
     def auto_start_logic():
