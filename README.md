@@ -58,10 +58,14 @@ python -m playwright install chromium
 python app.py
 ```
 
-**方式 B：双击一键启动（仅 Windows）**
-直接双击项目根目录下的 `一键启动.bat`，自动检查环境并启动。
+**方式 B：双击一键启动（Windows）**
+直接双击项目根目录下的 `一键启动.bat`。
 
-启动后浏览器会自动打开 Web 管理面板：`http://127.0.0.1:5000/terminal`
+**方式 C：双击一键启动（macOS / Linux）**
+1. 首次运行需赋予权限：打开终端，输入 `chmod +x ` (后面有个空格)，然后将 `一键启动.command` 拖入终端按回车。
+2. 之后直接双击 `一键启动.command` 即可运行。
+
+> 💡 **首次运行提示**：如果是从 Release 下载的压缩包，项目内不含 `config.yaml`。启动脚本会自动运行，但你也可以手动参考 `config.example.yaml` 进行配置。建议直接启动后通过 Web 面板配置，系统会自动生成配置文件。
 
 ---
 
