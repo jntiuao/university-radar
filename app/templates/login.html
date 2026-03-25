@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录 - 院校雷达</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            color: white;
+        }
+        .login-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            width: 100%;
+            max-width: 320px;
+            text-align: center;
+        }
+        h1 { margin-bottom: 1.5rem; font-size: 1.5rem; }
+        input {
+            width: 100%;
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+            border-radius: 0.5rem;
+            border: none;
+            outline: none;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            border: none;
+            background: #2563eb;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        button:hover { background: #1d4ed8; }
+        .error { color: #f87171; font-size: 0.875rem; margin-top: 0.5rem; display: none; }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <h1>🎓 院校雷达</h1>
+        <form id="loginForm">
+            <input type="password" id="password" name="password" placeholder="请输入访问密码" required autofocus>
+            <button type="submit">进入系统</button>
+            <div id="errorMsg" class="error">密码错误，请重试</div>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const password = document.getElementById('password').value;
+            const res = await fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password })
+            });
+            if (res.ok) {
+                window.location.href = '/terminal';
+            } else {
+                document.getElementById('errorMsg').style.display = 'block';
+            }
+        };
+    </script>
+</body>
+</html>

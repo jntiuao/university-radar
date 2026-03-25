@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  university-radar:
+    build: .
+    container_name: university-radar
+    restart: always
+    ports:
+      - "5000:5000"
+    environment:
+      - AUTH_PASSWORD=your_secure_password_here  # 🌐 修改此项作为您的在线访问密码
+      - TZ=Asia/Shanghai
+    volumes:
+      - ./radar_platform.db:/app/radar_platform.db
+      - ./config.yaml:/app/config.yaml
+      - ./universities.yaml:/app/universities.yaml
+      - ./logs:/app/logs

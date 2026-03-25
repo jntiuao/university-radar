@@ -26,5 +26,23 @@ def create_app():
     # 注册蓝图
     from .routes import bp
     app.register_blueprint(bp)
+
+    # 简单登录验证中间件 (针对在线化部署)
+    from flask import session, request, redirect, url_for
+    @app.before_request
+    def check_auth():
+        # 如果设置了 AUTH_PASSWORD，则启用访问限制
+        auth_password = os.getenv("AUTH_PASSWORD")
+        if not auth_password:
+            return
+
+        # 豁免列表：登录页面、登录 API、静态资源
+        exempt_paths = ['/login', '/api/login', '/assets/']
+        if any(request.path.startswith(p) for p in exempt_paths):
+            return
+            
+        # 检查会话
+        if not session.get('is_authenticated'):
+            return redirect('/login')
     
     return app

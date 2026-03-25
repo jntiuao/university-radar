@@ -15,10 +15,6 @@ DB_PATH = 'radar_platform.db'
 
 bp = Blueprint('main', __name__)
 
-@bp.route('/')
-def index():
-    return redirect('/terminal')
-
 @bp.route('/terminal/', defaults={'path': ''})
 @bp.route('/terminal/<path:path>')
 def terminal(path):
@@ -27,6 +23,24 @@ def terminal(path):
     resp.headers['Pragma'] = 'no-cache'
     resp.headers['Expires'] = '0'
     return resp
+
+@bp.route('/login', methods=['GET'])
+def login_page():
+    # 如果没设密码，直接进系统
+    if not os.getenv("AUTH_PASSWORD"):
+        return redirect('/terminal')
+    return render_template('login.html')
+
+@bp.route('/api/login', methods=['POST'])
+def api_login():
+    data = request.json
+    password = data.get('password')
+    correct_password = os.getenv("AUTH_PASSWORD")
+    
+    if correct_password and password == correct_password:
+        session['is_authenticated'] = True
+        return jsonify({"status": "ok"})
+    return jsonify({"status": "error", "message": "密码错误"}), 401
 
 @bp.route('/api/universities', methods=['GET'])
 def get_universities():
