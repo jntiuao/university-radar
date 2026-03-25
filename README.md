@@ -58,15 +58,15 @@ python -m playwright install chromium
 python app.py
 ```
 
-**方式 B：通过 Python 引导（推荐，避开 Win11 拦截）**
+**方式 B：双击一键启动（推荐）**
+直接双击项目根目录下的 **`一键启动.bat`** (Windows) 或 **`一键启动.command`** (macOS)。
+*现在它们会由 Python 引导启动，能有效避开 Windows 11 的拦截。*
+
+**方式 C：手动命令启动**
 在终端或 PowerShell 中执行：
 ```bash
 python start.py
 ```
-*此方式由 Python 解释器直接运行，通常不会触发 Windows 11 的智能应用控制 (SAC) 拦截。*
-
-**方式 C：双击一键启动（Windows）**
-直接双击项目根目录下的 `一键启动.bat`。如果提示拦截，请点击“更多信息” -> “仍要运行”。
 1. 首次运行需赋予权限：打开终端，输入 `chmod +x ` (后面有个空格)，然后将 `一键启动.command` 拖入终端按回车。
 2. 之后直接双击 `一键启动.command` 即可运行。
 
