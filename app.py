@@ -12,7 +12,7 @@ if __name__ == '__main__':
     log = logging.getLogger('werkzeug')
     log.setLevel(logging.ERROR)
     
-    print("\n🚀 正在启动 院校雷达 v1.0.0，请稍候...")
+    print("\n🚀 正在启动 院校雷达 v1.0.1，请稍候...")
 
     # 1. 服务启动初始化：自动执行数据校准与监控引擎
     def auto_start_logic():
