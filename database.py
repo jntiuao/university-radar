@@ -1,255 +1,207 @@
 import os
 import logging
 import json
-from sqlalchemy import create_engine, Column, Integer, String, Text, Boolean, TIMESTAMP, func
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, scoped_session
+import sqlite3
+from datetime import datetime
 
 logger = logging.getLogger('DatabaseManager')
-Base = declarative_base()
-
-class Announcement(Base):
-    __tablename__ = 'global_announcements'
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    university = Column(String(255))
-    module = Column(String(255))
-    title = Column(Text)
-    link = Column(Text, index=True)
-    publish_date = Column(String(50))
-    category = Column(String(100))
-    major = Column(String(100))
-    urgency = Column(String(20))
-    relevance_score = Column(Integer)
-    relevance_reason = Column(Text)
-    ai_summary = Column(Text)
-    ai_action_suggestion = Column(Text)
-    is_pdf = Column(Boolean, default=False)
-    status = Column(Integer, default=0)
-    full_text = Column(Text)
-    content_hash = Column(String(64), index=True)
-    target_year = Column(Integer)
-    historical_ref_id = Column(Integer)
-    created_at = Column(TIMESTAMP, server_default=func.now())
-
-class Setting(Base):
-    __tablename__ = 'settings'
-    key = Column(String(100), primary_key=True)
-    value = Column(Text)
 
 class DatabaseManager:
-    def __init__(self, db_url=None):
-        # 优先使用环境变量中的 DATABASE_URL (用于云端 Postgres)
-        # 否则回退到本地 SQLite
-        if not db_url:
-            db_url = os.getenv("DATABASE_URL")
-            
-        if not db_url:
-            db_url = "sqlite:///radar_platform.db"
+    def __init__(self, db_path=None):
+        # 由于不再支持云端 Postgres，直接锁定本地 SQLite
+        if not db_path:
+            db_path = "radar_platform.db"
         
-        # 处理 Heroku/Render 等平台可能提供的 postgres:// 协议（SQLAlchemy 2.0 只认 postgresql://）
-        if db_url.startswith("postgres://"):
-            db_url = db_url.replace("postgres://", "postgresql://", 1)
-            
-        try:
-            self.engine = create_engine(db_url, pool_pre_ping=True)
-            self.SessionFactory = scoped_session(sessionmaker(bind=self.engine))
-            Base.metadata.create_all(self.engine)
-            logger.info(f"数据库引擎已就绪: {db_url.split('@')[-1] if '@' in db_url else db_url}")
-        except Exception as e:
-            logger.warning(f"❌ 数据库连接失败 ({db_url})，错误: {e}")
-            if "sqlite" not in db_url:
-                logger.info("⚠️ 正在尝试回退到本地 SQLite 数据库...")
-                fallback_url = "sqlite:///radar_platform.db"
-                self.engine = create_engine(fallback_url, pool_pre_ping=True)
-                self.SessionFactory = scoped_session(sessionmaker(bind=self.engine))
-                Base.metadata.create_all(self.engine)
-                logger.info("✅ 已降级并运行在本地路径: radar_platform.db")
-            else:
-                raise e
+        self.db_path = db_path
+        self._init_db()
 
-    def get_session(self):
-        return self.SessionFactory()
+    def _get_connection(self):
+        conn = sqlite3.connect(self.db_path)
+        conn.row_factory = sqlite3.Row  # 使结果可以通过列名访问
+        return conn
+
+    def _init_db(self):
+        """初始化数据库表结构"""
+        with self._get_connection() as conn:
+            # 创建公告表
+            conn.execute('''
+                CREATE TABLE IF NOT EXISTS global_announcements (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    university TEXT,
+                    module TEXT,
+                    title TEXT,
+                    link TEXT,
+                    publish_date TEXT,
+                    category TEXT,
+                    major TEXT,
+                    urgency TEXT,
+                    relevance_score INTEGER,
+                    relevance_reason TEXT,
+                    ai_summary TEXT,
+                    ai_action_suggestion TEXT,
+                    is_pdf BOOLEAN,
+                    status INTEGER DEFAULT 0,
+                    full_text TEXT,
+                    content_hash TEXT,
+                    target_year INTEGER,
+                    historical_ref_id INTEGER,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ''')
+            # 创建索引
+            conn.execute('CREATE INDEX IF NOT EXISTS idx_link ON global_announcements (link)')
+            conn.execute('CREATE INDEX IF NOT EXISTS idx_hash ON global_announcements (content_hash)')
+            
+            # 创建设置表
+            conn.execute('''
+                CREATE TABLE IF NOT EXISTS settings (
+                    key TEXT PRIMARY KEY,
+                    value TEXT
+                )
+            ''')
+            conn.commit()
+        logger.info(f"💾 数据库层已就绪 (原生驱动): {self.db_path}")
 
     def get_setting(self, key, default=None):
-        session = self.get_session()
-        try:
-            row = session.query(Setting).filter_by(key=key).first()
+        with self._get_connection() as conn:
+            row = conn.execute("SELECT value FROM settings WHERE key = ?", (key,)).fetchone()
             if row:
                 try:
-                    return json.loads(row.value)
+                    return json.loads(row['value'])
                 except:
-                    return row.value
+                    return row['value']
             return default
-        finally:
-            session.close()
 
     def save_setting(self, key, value):
-        session = self.get_session()
-        try:
-            val_str = json.dumps(value, ensure_ascii=False) if not isinstance(value, str) else value
-            item = session.query(Setting).filter_by(key=key).first()
-            if item:
-                item.value = val_str
-            else:
-                item = Setting(key=key, value=val_str)
-                session.add(item)
-            session.commit()
-        finally:
-            session.close()
+        val_str = json.dumps(value, ensure_ascii=False) if not isinstance(value, str) else value
+        with self._get_connection() as conn:
+            conn.execute("INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)", (key, val_str))
+            conn.commit()
 
     def get_ai_cache(self, content_hash):
         if not content_hash: return None
-        session = self.get_session()
-        try:
-            row = session.query(Announcement).filter_by(content_hash=content_hash).filter(Announcement.ai_summary != "").order_by(Announcement.id.desc()).first()
+        with self._get_connection() as conn:
+            row = conn.execute(
+                "SELECT category, major, urgency, relevance_score, relevance_reason, ai_summary, ai_action_suggestion, target_year "
+                "FROM global_announcements WHERE content_hash = ? AND ai_summary != '' ORDER BY id DESC LIMIT 1",
+                (content_hash,)
+            ).fetchone()
             if row:
                 return {
-                    "category": row.category,
-                    "major": row.major,
-                    "urgency": row.urgency,
-                    "relevance_score": row.relevance_score,
-                    "relevance_reason": row.relevance_reason,
-                    "summary": row.ai_summary,
-                    "action": row.ai_action_suggestion,
-                    "target_year": row.target_year
+                    "category": row['category'],
+                    "major": row['major'],
+                    "urgency": row['urgency'],
+                    "relevance_score": row['relevance_score'],
+                    "relevance_reason": row['relevance_reason'],
+                    "summary": row['ai_summary'],
+                    "action": row['ai_action_suggestion'],
+                    "target_year": row['target_year']
                 }
-        finally:
-            session.close()
         return None
 
     def is_link_scanned(self, link):
-        session = self.get_session()
-        try:
-            row = session.query(Announcement).filter_by(link=link).first()
-            return row.content_hash if row else None
-        finally:
-            session.close()
+        with self._get_connection() as conn:
+            row = conn.execute("SELECT content_hash FROM global_announcements WHERE link = ?", (link,)).fetchone()
+            return row['content_hash'] if row else None
 
     def check_duplicate_title(self, uni, title, module=None):
-        session = self.get_session()
-        try:
-            query = session.query(Announcement).filter_by(university=uni, title=title)
+        with self._get_connection() as conn:
             if module:
-                query = query.filter_by(module=module)
-            return query.first() is not None
-        finally:
-            session.close()
+                row = conn.execute(
+                    "SELECT 1 FROM global_announcements WHERE university=? AND title=? AND module=?",
+                    (uni, title, module)
+                ).fetchone()
+            else:
+                row = conn.execute(
+                    "SELECT 1 FROM global_announcements WHERE university=? AND title=?",
+                    (uni, title)
+                ).fetchone()
+            return row is not None
 
     def save_announcement(self, university, module, title, link, date, ai_data, is_pdf=False, full_text=None, content_hash=None):
-        session = self.get_session()
-        try:
-            item = Announcement(
-                university=university,
-                module=module,
-                title=title,
-                link=link,
-                publish_date=date,
-                category=ai_data.get('category', '通知'),
-                major=ai_data.get('major', ''),
-                urgency=ai_data.get('urgency', '中'),
-                relevance_score=ai_data.get('relevance_score', 50),
-                relevance_reason=ai_data.get('relevance_reason', ''),
-                ai_summary=ai_data.get('summary', ''),
-                ai_action_suggestion=ai_data.get('action', ''),
-                is_pdf=is_pdf,
-                full_text=full_text,
-                content_hash=content_hash,
-                target_year=ai_data.get('target_year'),
-                historical_ref_id=ai_data.get('historical_ref_id')
-            )
-            session.add(item)
-            session.commit()
-        finally:
-            session.close()
+        with self._get_connection() as conn:
+            conn.execute('''
+                INSERT INTO global_announcements (
+                    university, module, title, link, publish_date, 
+                    category, major, urgency, relevance_score, relevance_reason, 
+                    ai_summary, ai_action_suggestion, is_pdf, full_text, content_hash, 
+                    target_year, historical_ref_id
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (
+                university, module, title, link, date,
+                ai_data.get('category', '通知'),
+                ai_data.get('major', ''),
+                ai_data.get('urgency', '中'),
+                ai_data.get('relevance_score', 50),
+                ai_data.get('relevance_reason', ''),
+                ai_data.get('summary', ''),
+                ai_data.get('action', ''),
+                is_pdf, full_text, content_hash,
+                ai_data.get('target_year'),
+                ai_data.get('historical_ref_id')
+            ))
+            conn.commit()
 
     def update_content(self, link, full_text, content_hash, ai_data):
-        session = self.get_session()
-        try:
-            item = session.query(Announcement).filter_by(link=link).first()
-            if item:
-                item.full_text = full_text
-                item.content_hash = content_hash
-                item.ai_summary = ai_data.get('summary', '')
-                item.ai_action_suggestion = ai_data.get('action', '')
-                item.target_year = ai_data.get('target_year')
-                item.historical_ref_id = ai_data.get('historical_ref_id')
-                item.status = 0
-                session.commit()
-                logger.info(f"已更新公告内容异动: {link}")
-        finally:
-            session.close()
+        with self._get_connection() as conn:
+            conn.execute('''
+                UPDATE global_announcements SET 
+                    full_text=?, content_hash=?, ai_summary=?, 
+                    ai_action_suggestion=?, target_year=?, historical_ref_id=?, status=0
+                WHERE link=?
+            ''', (
+                full_text, content_hash, ai_data.get('summary', ''),
+                ai_data.get('action', ''), ai_data.get('target_year'),
+                ai_data.get('historical_ref_id'), link
+            ))
+            conn.commit()
+            logger.info(f"已更新公告内容异动: {link}")
 
     def get_historical_match(self, university, category, major, current_year):
-        session = self.get_session()
-        try:
-            row = session.query(Announcement).filter(
-                Announcement.university == university,
-                Announcement.category == category,
-                Announcement.target_year < current_year
-            ).order_by(Announcement.target_year.desc(), Announcement.id.desc()).first()
+        with self._get_connection() as conn:
+            row = conn.execute('''
+                SELECT ai_summary, id FROM global_announcements 
+                WHERE university=? AND category=? AND target_year < ?
+                ORDER BY target_year DESC, id DESC LIMIT 1
+            ''', (university, category, current_year)).fetchone()
             if row:
-                return {"ai_summary": row.ai_summary, "id": row.id}
-        finally:
-            session.close()
+                return {"ai_summary": row['ai_summary'], "id": row['id']}
         return None
 
     def get_unrouted_announcements(self, min_relevance=0):
-        session = self.get_session()
-        try:
-            rows = session.query(Announcement).filter(
-                Announcement.status == 0,
-                Announcement.relevance_score >= min_relevance
-            ).all()
-            return [self._to_dict(r) for r in rows]
-        finally:
-            session.close()
+        with self._get_connection() as conn:
+            rows = conn.execute(
+                "SELECT * FROM global_announcements WHERE status = 0 AND relevance_score >= ?",
+                (min_relevance,)
+            ).fetchall()
+            return [dict(r) for r in rows]
 
     def mark_as_routed(self, event_id):
-        session = self.get_session()
-        try:
-            item = session.query(Announcement).filter_by(id=event_id).first()
-            if item:
-                item.status = 1
-                session.commit()
-        finally:
-            session.close()
+        with self._get_connection() as conn:
+            conn.execute("UPDATE global_announcements SET status = 1 WHERE id = ?", (event_id,))
+            conn.commit()
 
     def get_recent_announcements(self, limit=50):
-        session = self.get_session()
-        try:
-            rows = session.query(Announcement).order_by(Announcement.id.desc()).limit(limit).all()
-            return [self._to_dict(r) for r in rows]
-        finally:
-            session.close()
-
-    def _to_dict(self, row):
-        return {c.name: getattr(row, c.name) for c in row.__table__.columns}
+        with self._get_connection() as conn:
+            rows = conn.execute(
+                "SELECT * FROM global_announcements ORDER BY id DESC LIMIT ?",
+                (limit,)
+            ).fetchall()
+            return [dict(r) for r in rows]
 
     def clear_junk_data(self):
-        session = self.get_session()
-        try:
-            count = session.query(Announcement).filter(
-                (Announcement.relevance_score < 50) | (Announcement.category == '杂项通知')
-            ).delete()
-            session.commit()
+        with self._get_connection() as conn:
+            cur = conn.execute(
+                "DELETE FROM global_announcements WHERE relevance_score < 50 OR category = '杂项通知'"
+            )
+            count = cur.rowcount
+            conn.commit()
             if count > 0:
                 logger.info(f"✨ [数据清理] 已清理 {count} 条杂项干扰信息")
             return count
-        finally:
-            session.close()
 
-    def inject_test_data(self):
-        test_event = {
-            "category": "复试通知",
-            "major": "计算机/软件工程",
-            "urgency": "高",
-            "relevance_score": 95,
-            "relevance_reason": "直接命中你的目标专业",
-            "summary": "这是来自院校雷达的测试数据，用于验证推送通道是否畅通。",
-            "action": "请检查手机是否收到推送;确认格式是否正确",
-        }
-        self.save_announcement(
-            "测试大学", "研招办", "2025年硕士研究生复试名单公示(测试数据)", 
-            "http://localhost/test", "2025-03-15", test_event, is_pdf=False
-        )
-        return 1
+    # 兼容性存根，防止外部调用报错（虽然搜索没搜到，但保留空实现以策安全）
+    def get_session(self):
+        class DummySession:
+            def close(self): pass
+        return DummySession()

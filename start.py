@@ -18,7 +18,6 @@ def check_dependencies():
         import yaml
         import apscheduler
         import playwright
-        import sqlalchemy
         import fitz
         print("  ✓ 核心依赖已就绪")
     except ImportError:
