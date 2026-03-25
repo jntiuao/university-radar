@@ -8,4 +8,5 @@ playwright==1.50.0  # 核心抓取引擎
 beautifulsoup4==4.14.3
 openai==1.61.0
 python-dotenv==1.2.1
+SQLAlchemy==2.0.25
 PyMuPDF

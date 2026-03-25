@@ -13,12 +13,12 @@ def run_command(command):
 
 def check_dependencies():
     print("📋 [1/3] 检查运行环境与依赖...")
-    needed_pkg = ["flask", "yaml", "apscheduler", "playwright"]
     try:
         import flask
         import yaml
         import apscheduler
         import playwright
+        import sqlalchemy
         import fitz
         print("  ✓ 核心依赖已就绪")
     except ImportError:
