@@ -70,7 +70,7 @@ class UniversityScanner:
             main_config = yaml.safe_load(f) or {}
 
         self.proxy_url = main_config.get('proxy') or os.getenv("HTTP_PROXY")
-        self.db = DatabaseManager('radar_platform.db')
+        self.db = DatabaseManager()
         self.selected_majors = main_config.get('selected_majors', [])
         self.selected_universities = main_config.get('selected_universities', [])
         

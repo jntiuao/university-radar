@@ -1,11 +1,18 @@
 import os
 import yaml
+import logging
+from database import DatabaseManager
 
 CONFIG_PATH = 'config.yaml'
 UNI_DB_PATH = 'universities_db.yaml'
 
+logger = logging.getLogger('Utils')
+db = DatabaseManager()
+
 # ============ 预置专业列表 (严格对标研招网三级级联目录) ============
+# ... [PRESET_MAJORS 内容保持不变]
 PRESET_MAJORS = {
+    # 保持原有长字典内容...
     "学术学位 (学硕)": {
         "[01] 哲学": ["0101 哲学"],
         "[02] 经济学": ["0201 理论经济学", "0202 应用经济学"],
@@ -38,17 +45,40 @@ PRESET_MAJORS = {
 }
 
 def load_config():
+    # 优先从数据库读取
+    cfg = db.get_setting('app_config')
+    if cfg:
+        return cfg
+        
+    # 回退到本地文件
     if os.path.exists(CONFIG_PATH):
         with open(CONFIG_PATH, 'r', encoding='utf-8') as f:
-            return yaml.safe_load(f) or {}
+            cfg = yaml.safe_load(f) or {}
+            # 自动同步到数据库，以便下次持久化加载
+            if cfg: db.save_setting('app_config', cfg)
+            return cfg
     return {}
 
 def save_config(config):
-    with open(CONFIG_PATH, 'w', encoding='utf-8') as f:
-        yaml.dump(config, f, allow_unicode=True, default_flow_style=False)
+    # 存储到数据库
+    db.save_setting('app_config', config)
+    # 存储到本地 (为了本地开发兼容性)
+    try:
+        with open(CONFIG_PATH, 'w', encoding='utf-8') as f:
+            yaml.dump(config, f, allow_unicode=True, default_flow_style=False)
+    except Exception as e:
+        logger.warning(f"本地配置保存失败 (云端环境正常): {e}")
 
 def load_university_db():
+    # 优先从数据库读取
+    data = db.get_setting('university_db')
+    if data:
+        return data
+
+    # 回退到本地文件
     if os.path.exists(UNI_DB_PATH):
         with open(UNI_DB_PATH, 'r', encoding='utf-8') as f:
-            return yaml.safe_load(f) or {}
+            data = yaml.safe_load(f) or {}
+            if data: db.save_setting('university_db', data)
+            return data
     return {"universities": []}

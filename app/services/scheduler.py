@@ -11,7 +11,7 @@ from app.services.pusher import push_to_channel
 from database import DatabaseManager
 
 logger = logging.getLogger('RadarApp')
-DB_PATH = 'radar_platform.db'
+
 
 # 全局状态
 scanner_state = {
@@ -56,7 +56,7 @@ def run_scan_cycle():
 
     # 推送环节
     try:
-        db = DatabaseManager(DB_PATH)
+        db = DatabaseManager()
         new_events = db.get_unrouted_announcements(min_relevance=threshold)
 
         if new_events:

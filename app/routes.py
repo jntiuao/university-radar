@@ -11,9 +11,14 @@ from app.services.pusher import push_to_channel
 from database import DatabaseManager
 
 logger = logging.getLogger('RadarApp')
-DB_PATH = 'radar_platform.db'
+
 
 bp = Blueprint('main', __name__)
+
+@bp.route('/')
+def index():
+    return redirect('/terminal/')
+
 
 @bp.route('/terminal/', defaults={'path': ''})
 @bp.route('/terminal/<path:path>')
@@ -151,7 +156,7 @@ def update_config():
 @bp.route('/api/archives/stats', methods=['GET'])
 def get_archive_stats():
     """获取历史档案的统计概览数据"""
-    db = DatabaseManager(DB_PATH)
+    db = DatabaseManager()
     c = db._get_conn().cursor()
     
     # 统计每年、每种类型的数量
@@ -244,7 +249,7 @@ def api_discover_intel():
 
 @bp.route('/api/test-data', methods=['POST'])
 def inject_test_data():
-    db = DatabaseManager(DB_PATH)
+    db = DatabaseManager()
     config = load_config()
     selected_unis = config.get('selected_universities', [])
     notifications = config.get('notifications', [])
@@ -342,7 +347,7 @@ def test_api_connectivity():
 
 @bp.route('/api/events', methods=['GET'])
 def get_events():
-    db = DatabaseManager(DB_PATH)
+    db = DatabaseManager()
     # 不再剥除前后空格，直接匹配；因为之前抓取可能写了包含空格的值，这里就做个容错
     config_unis = load_config().get('selected_universities', [])
     selected_unis = [u for u in config_unis if u]
