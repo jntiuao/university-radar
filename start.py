@@ -53,7 +53,7 @@ def check_playwright():
     return True
 
 def start_main():
-    print("\n🚀 [3/3] 正在启动 院校雷达 v1.0.0 服务...")
+    print("\n🚀 [3/3] 正在启动 院校雷达 v1.0.1 服务...")
     print("==========================================")
     print("提示：保持此窗口打开，关闭则停止服务")
     print("==========================================")
@@ -61,12 +61,20 @@ def start_main():
     # 设置编码
     os.environ['PYTHONIOENCODING'] = 'utf-8'
     
-    # 直接导入并在当前进程运行，或是启动新进程
-    # 为了保持环境一致性，启动新进程
     try:
-        subprocess.run([sys.executable, "app.py"])
+        # 直接运行 app.py 并获取其返回状态
+        process = subprocess.Popen([sys.executable, "app.py"])
+        process.wait()
+        
+        # 如果 app.py 是非正常退出的（比如报错崩了），提示用户
+        if process.returncode != 0 and process.returncode != None:
+            print(f"\n❌ 程序异常退出 (退出码: {process.returncode})")
+            input("\n[调试信息] 程序似乎崩溃了，请截图此窗口并发送给开发者进行排查。输入回车键退出...")
     except KeyboardInterrupt:
-        print("\n👋 已停止服务。")
+        print("\n👋 已手动停止服务。")
+    except Exception as e:
+        print(f"\n❌ 启动器运行错误: {e}")
+        input("\n按回车键退出...")
 
 if __name__ == "__main__":
     print("==========================================")

@@ -50,10 +50,22 @@ class DatabaseManager:
         if db_url.startswith("postgres://"):
             db_url = db_url.replace("postgres://", "postgresql://", 1)
             
-        self.engine = create_engine(db_url, pool_pre_ping=True)
-        self.SessionFactory = scoped_session(sessionmaker(bind=self.engine))
-        Base.metadata.create_all(self.engine)
-        logger.info(f"数据库引擎已就绪: {db_url.split('@')[-1] if '@' in db_url else db_url}")
+        try:
+            self.engine = create_engine(db_url, pool_pre_ping=True)
+            self.SessionFactory = scoped_session(sessionmaker(bind=self.engine))
+            Base.metadata.create_all(self.engine)
+            logger.info(f"数据库引擎已就绪: {db_url.split('@')[-1] if '@' in db_url else db_url}")
+        except Exception as e:
+            logger.warning(f"❌ 数据库连接失败 ({db_url})，错误: {e}")
+            if "sqlite" not in db_url:
+                logger.info("⚠️ 正在尝试回退到本地 SQLite 数据库...")
+                fallback_url = "sqlite:///radar_platform.db"
+                self.engine = create_engine(fallback_url, pool_pre_ping=True)
+                self.SessionFactory = scoped_session(sessionmaker(bind=self.engine))
+                Base.metadata.create_all(self.engine)
+                logger.info("✅ 已降级并运行在本地路径: radar_platform.db")
+            else:
+                raise e
 
     def get_session(self):
         return self.SessionFactory()
