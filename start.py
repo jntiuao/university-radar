@@ -19,6 +19,7 @@ def check_dependencies():
         import apscheduler
         import playwright
         import fitz
+        import selectolax
         print("  ✓ 核心依赖已就绪")
     except ImportError:
         print("  [提示] 正在安装必要依赖，仅在首次运行或依赖缺失时执行...")

@@ -19,6 +19,8 @@ class DatabaseManager:
         conn = sqlite3.connect(self.db_path)
         conn.row_factory = sqlite3.Row  # 使结果可以通过列名访问
         return conn
+        
+    _get_conn = _get_connection  # 💡 别名兼容旧版 routes.py 的调用方式
 
     def _init_db(self):
         """初始化数据库表结构"""
