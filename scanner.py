@@ -382,7 +382,7 @@ class UniversityScanner:
             logger.error(f"深度解析数据项出错 ({link}): {e}")
 
     async def scan(self):
-        logger.info("============== 启动深海潜航监控引擎 ==============")
+        logger.info("============== 启动院校公告监控引擎 ==============")
         self.semaphore = asyncio.Semaphore(3)
         async with async_playwright() as p:
             proxy_cfg = {"server": self.proxy_url} if self.proxy_url else None
@@ -406,7 +406,7 @@ class UniversityScanner:
                 await asyncio.gather(*tasks)
             
             await browser.close()
-            logger.info("============== 本轮深海潜航扫描结束 ==============")
+            logger.info("============== 本轮院校公告扫描结束 ==============")
 
 if __name__ == "__main__":
     scanner = UniversityScanner('universities.yaml')

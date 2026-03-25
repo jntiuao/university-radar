@@ -398,7 +398,7 @@ export function NotificationsPage() {
                     </div>
                     {group.items.length === 0 ? (
                       <div className="py-8 text-center bg-[#fafafd] border-b border-border last:border-b-0">
-                        <p className="text-[13px] text-muted-foreground" style={{ fontWeight: 500 }}>近 30 天内暂无最新通告</p>
+                        <p className="text-[13px] text-muted-foreground" style={{ fontWeight: 500 }}>近 14 天内暂无最新通告</p>
                         <p className="text-[12px] text-muted-foreground/60 mt-1">系统正在全天候监控该渠道，如有更新将第一时间推送</p>
                       </div>
                     ) : (

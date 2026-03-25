@@ -175,7 +175,7 @@ def get_archive_stats():
 def start_scan():
     if start_scan_job():
         interval = load_config().get('scan_interval', 15)
-        return jsonify({"status": "started", "message": f"深海潜航计划已启动，每 {interval} 分钟扫描一次"})
+        return jsonify({"status": "started", "message": f"专项监控已启动，每 {interval} 分钟扫描一次"})
     return jsonify({"status": "running", "message": "监控已在运行中"})
 
 @bp.route('/api/scan/stop', methods=['POST'])
