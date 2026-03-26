@@ -20,6 +20,7 @@ def check_dependencies():
         import playwright
         import fitz
         import selectolax
+        import socks
         print("  ✓ 核心依赖已就绪")
     except ImportError:
         print("  [提示] 正在安装必要依赖，仅在首次运行或依赖缺失时执行...")
@@ -53,7 +54,7 @@ def check_playwright():
     return True
 
 def start_main():
-    print("\n🚀 [3/3] 正在启动 院校雷达 v1.0.1 服务...")
+    print("\n🚀 [3/3] 正在启动 院校雷达 v1.0.6 服务...")
     print("==========================================")
     print("提示：保持此窗口打开，关闭则停止服务")
     print("==========================================")

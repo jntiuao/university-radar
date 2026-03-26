@@ -10,3 +10,4 @@ openai==1.61.0
 python-dotenv==1.2.1
 PyMuPDF
 selectolax
+PySocks
