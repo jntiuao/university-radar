@@ -314,6 +314,28 @@ class UniversityScanner:
             if not is_new and new_hash == self.db.is_link_scanned(link):
                 return
 
+            # 尝试弥合完全缺失的日期：若列表页没提日期，从正文头部萃取
+            if not list_date:
+                # 官方通报常见于文首或文末落款，因此检查头部和尾部
+                search_scope = title + " " + full_text[:1000] + " " + full_text[-1000:]
+                body_date_match = re.search(r'(20\d{2})[-/年\.](\d{1,2})[-/月\.](\d{1,2})', search_scope)
+                if body_date_match:
+                    by, bm, bd = body_date_match.groups()
+                    list_date = f"{by}-{int(bm):02d}-{int(bd):02d}"
+            
+            # 💡 终极兜底 15天过滤：如果依然找不到日期，或者日期超过15天，彻底遗弃
+            if list_date:
+                try:
+                    pub_dt = datetime.datetime.strptime(str(list_date), '%Y-%m-%d')
+                    if (datetime.datetime.now() - pub_dt).days > 15:
+                        logger.debug(f"[{uni_name}] 正文判定为逾期 (>15天) 陈旧通知，已拦截: {title} ({list_date})")
+                        return
+                except ValueError:
+                    pass
+            else:
+                logger.debug(f"[{uni_name}] 原文及正文均无法提取生效日期，视为非公告页面，已拦截: {title}")
+                return
+
             # 第一步：初步猜测年份
             detected_year = datetime.datetime.now().year
             year_match = re.search(r'(20\d\d)', title + full_text[:200])
