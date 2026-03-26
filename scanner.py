@@ -286,8 +286,8 @@ class UniversityScanner:
                     try:
                         pub_dt = datetime.datetime.strptime(str(publish_date), '%Y-%m-%d')
                         days_ago = (datetime.datetime.now() - pub_dt).days
-                        if days_ago > 14:
-                            logger.debug(f"[{uni_name}] 跳过超过14天的通知: {title} ({publish_date})")
+                        if days_ago > 30:
+                            logger.debug(f"[{uni_name}] 跳过超过30天的通知: {title} ({publish_date})")
                             continue
                     except ValueError:
                         pass

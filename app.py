@@ -40,7 +40,5 @@ if __name__ == '__main__':
     print("\n* Web 管理面板: http://127.0.0.1:5000/terminal")
     print("* 按 Ctrl+C 停止服务\n")
     
-    # 将 host 改为 127.0.0.1，限制仅本地访问
-    app.run(host='127.0.0.1', port=5000, use_reloader=False)
-    port = int(os.getenv('PORT', 7860 if IS_CLOUD else 5000))
-    app.run(host=host, port=port, debug=False)
+    # 启动 Flask 服务 (v1.0.8 最终闭环版)
+    app.run(host='127.0.0.1', port=5000, debug=False, use_reloader=False)
