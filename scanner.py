@@ -168,7 +168,7 @@ class UniversityScanner:
             # ✅ 兼容空 selector：自动提取全页包含关键词的链接
             if not m_selector:
                 logger.info(f"[{uni_name}] 模块 『{m_name}』 未配置 selector，使用全页自动提取模式")
-                KEYWORDS = ['通知', '公告', '招生', '录取', '复试', '简章', '名单', '方案', '要求']
+                KEYWORDS = ['通知', '公告', '招生', '录取', '复试', '简章', '名单', '方案', '要求', '成绩', '分数', '调剂', '面试', '笔试', '初试', '一志愿', '研究生', '硕士', '博士', '大纲', '推免', '夏令营', '报名', '解答', '说明', '安排']
                 items = []
                 base_parsed = urllib.parse.urlparse(m_url)
                 
@@ -218,12 +218,6 @@ class UniversityScanner:
                     else:
                         items = soup.select(m_selector)
 
-            # 🎯 标题关键词校验过滤逻辑
-            WHITELIST = ["研究生", "硕士", "博士", "考研", "调剂", "复试", "录取", "招生", "拟录取", "夏令营", "简章", "大纲", "名单", "推免", "保研", "考博"]
-            BLACKLIST = ["会议", "讲座", "招聘", "竞赛", "比赛", "活动", "论坛", "讲学", "征文", "中奖", "培训", "教职工", "通报", "公示"]
-            # 豁免词：即使包含黑名单词，只要有这些词也放行 (如：2026年硕士录取名单公示)
-            EXEMPT = ["拟录取", "名单", "复试", "调剂", "录取", "招生", "简章"]
-
             for item in items:
                 a = item if item.name == 'a' else item.find('a')
                 if not a: continue
@@ -231,16 +225,6 @@ class UniversityScanner:
                 title = a.get_text(strip=True)
                 href = a.get('href')
                 if not title or not href: continue
-
-                # 💡 执行双重过滤判定
-                has_white = any(w in title for w in WHITELIST)
-                has_black = any(b in title for b in BLACKLIST)
-                is_exempt = any(e in title for e in EXEMPT)
-
-                # 逻辑：(包含黑名单项 且 不在豁免名单) 或者 (完全不包含白名单项) -> 拦截
-                if (has_black and not is_exempt) or (not has_white):
-                    logger.debug(f"[{uni_name}] 拦截杂项: {title[:30]}")
-                    continue
 
                 # 补全 URL
                 link = urljoin(m_url, href)
@@ -254,8 +238,8 @@ class UniversityScanner:
                 if a.parent and hasattr(a.parent, 'get_text'):
                     search_text = a.parent.get_text()
                 
-                date_match = re.search(r'(\d{4})[-/年](\d{1,2})[-/月](\d{1,2})', search_text)
-                short_match = re.search(r'(\d{2})[-/月](\d{2})', search_text)
+                date_match = re.search(r'(\d{4})[-/年\.](\d{1,2})[-/月\.](\d{1,2})', search_text)
+                short_match = re.search(r'(\d{2})[-/月\.](\d{2})', search_text)
                 
                 y = m = d = None
                 if date_match:
@@ -281,13 +265,13 @@ class UniversityScanner:
                     logger.debug(f"[{uni_name}] 跳过陈旧通知: {title} ({y}年)")
                     continue
 
-                # 💡 14天时间窗口过滤：有精确日期时，超过14天前的通知直接跳过
+                # 💡 15天时间窗口过滤：有精确日期时，超过15天前的通知直接跳过
                 if publish_date and '-' in str(publish_date):
                     try:
                         pub_dt = datetime.datetime.strptime(str(publish_date), '%Y-%m-%d')
                         days_ago = (datetime.datetime.now() - pub_dt).days
-                        if days_ago > 30:
-                            logger.debug(f"[{uni_name}] 跳过超过30天的通知: {title} ({publish_date})")
+                        if days_ago > 15:
+                            logger.debug(f"[{uni_name}] 跳过超过15天的通知: {title} ({publish_date})")
                             continue
                     except ValueError:
                         pass

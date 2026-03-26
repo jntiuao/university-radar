@@ -71,13 +71,12 @@ class AIAnalyzer:
         years = re.findall(r'20\d\d', title)
         is_historical = False
         if years:
-            for y in years:
-                if int(y) < current_year:
-                    is_historical = True
-                    break
+            # 只有当标题中所有的年份都小于当前年份时，才判定为彻底的历史文件
+            if all(int(y) < current_year for y in years):
+                is_historical = True
 
         # 考研特征强过滤
-        exam_keywords = ["考研", "研究生", "招生", "复试", "调剂", "录取", "硕士", "博士", "保研", "推免", "夏令营", "大纲", "成绩", "考点", "专项计划"]
+        exam_keywords = ["考研", "研究生", "招生", "复试", "调剂", "录取", "硕士", "博士", "保研", "推免", "夏令营", "大纲", "成绩", "考点", "专项计划", "分数", "初试", "面试", "笔试"]
         is_exam_related = any(k in title for k in exam_keywords)
 
         score = 60
@@ -89,9 +88,9 @@ class AIAnalyzer:
             category = "历史归档"
             reason = "往年历史归档数据"
         elif not is_exam_related:
-            score = 10
-            category = "杂项通知"
-            reason = "非考研强相关，系统降级判定"
+            score = 50
+            category = "常规通知"
+            reason = "未匹配强特征，为防漏报予以保留"
         else:
             category = "考研情报 / 官方动态"
 
