@@ -159,7 +159,11 @@ class UniversityScanner:
             raw_data, method = await self._get_content_with_engine(m_url, browser_context)
             if not raw_data: return
 
-            soup = BeautifulSoup(raw_data if isinstance(raw_data, str) else raw_data.decode('utf-8', 'ignore'), 'lxml')
+            # 🛡️ 优先使用 lxml，失败则降级到内置解析器
+            try:
+                soup = BeautifulSoup(raw_data if isinstance(raw_data, str) else raw_data.decode('utf-8', 'ignore'), 'lxml')
+            except Exception:
+                soup = BeautifulSoup(raw_data if isinstance(raw_data, str) else raw_data.decode('utf-8', 'ignore'), 'html.parser')
             
             # ✅ 兼容空 selector：自动提取全页包含关键词的链接
             if not m_selector:
@@ -192,7 +196,10 @@ class UniversityScanner:
                 logger.debug(f"[{uni_name}] 列表为空，怀疑动态加载，触发浏览器补扫: {m_url}")
                 raw_data, method = await self._get_content_with_engine(m_url, browser_context, force_browser=True)
                 if raw_data:
-                    soup = BeautifulSoup(raw_data if isinstance(raw_data, str) else raw_data.decode('utf-8', 'ignore'), 'lxml')
+                    try:
+                        soup = BeautifulSoup(raw_data if isinstance(raw_data, str) else raw_data.decode('utf-8', 'ignore'), 'lxml')
+                    except Exception:
+                        soup = BeautifulSoup(raw_data if isinstance(raw_data, str) else raw_data.decode('utf-8', 'ignore'), 'html.parser')
                     if not m_selector:
                         base_parsed = urllib.parse.urlparse(m_url)
                         for noise_tag in soup.find_all(['nav', 'header', 'footer', 'aside']):
@@ -409,5 +416,6 @@ class UniversityScanner:
             logger.info("============== 本轮院校公告扫描结束 ==============")
 
 if __name__ == "__main__":
+    # 💡 恢复为 universities.yaml (这是 Web 端生成的实时清单)
     scanner = UniversityScanner('universities.yaml')
     asyncio.run(scanner.scan())

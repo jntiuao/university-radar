@@ -39,8 +39,15 @@ def run_scan_cycle():
         scanner_state['logs'].append("📡 开始扫描选定的院校网站...")
 
         from scanner import UniversityScanner
-        # 💡 每次都重新实例化以加载最新的 universities.yaml 配置文件
-        scanner_instance = UniversityScanner('universities.yaml')
+        
+        # 💡 容错处理：检查 Universities.yaml 是否生成
+        # 该文件由 Web UI 保存配置时生成，包含用户选定的学校
+        scan_config_path = 'universities.yaml'
+        if not os.path.exists(scan_config_path):
+            scanner_state['logs'].append("⚠️ 尚未检测到院校监控清单 (universities.yaml)，请先在管理面板【院校配置】中选择学校并保存。")
+            return
+            
+        scanner_instance = UniversityScanner(scan_config_path)
 
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)

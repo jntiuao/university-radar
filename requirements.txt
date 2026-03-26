@@ -11,3 +11,4 @@ python-dotenv==1.2.1
 PyMuPDF
 selectolax
 PySocks
+lxml
